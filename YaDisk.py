@@ -1,10 +1,11 @@
 import requests
 
+
 class YaDisk:
     def __init__(self, token):
         self.token = token
-        self.host = 'https://cloud-api.yandex.net'
-        self.file_api = '/v1/disk/resources/'
+        self.host = 'https://cloud-api.yandex.net/v1/disk/'
+        self.file_api = 'resources/'
 
     def _get_api_url(self, api=''):
         res = f'{self.host}{self.file_api}{api}'
@@ -17,18 +18,32 @@ class YaDisk:
     # get file list
     def list(self):
         res = requests.get(url=self._get_api_url('files'), headers=self._get_headers())
-        return res.json()
+        if res.ok:
+            return res.json()
 
-    # upload file
+    def info(self):
+        res = requests.get(url=self.host, headers=self._get_headers())
+        if res.ok:
+            return res.json()
+
+    # upload files
     def uploads(self, path, filenames):
         params = {
             'overwrite': 'true'
         }
         for filename in filenames:
             params['path'] = f'{path}/{filename}'
-            upload_url = requests.get(url=self._get_api_url('upload'), headers=self._get_headers(), params=params).json()
+            upload_url = requests.get(url=self._get_api_url('upload'), headers=self._get_headers(),
+                                      params=params).json()
             res = requests.put(url=upload_url.get('href', ''), data=open(filename, 'rb'), params=params)
             res.raise_for_status()
+
+    # загрузить данные из data на яндекс диск, fullpath - полный путь до файла на яндекс диске
+    def upload(self, fullpath, data):
+        params = {'overwrite': 'true', 'path': fullpath}
+        upload_url = requests.get(url=self._get_api_url('upload'), headers=self._get_headers(), params=params).json()
+        res = requests.put(url=upload_url.get('href', ''), data=data, params=params)
+        res.raise_for_status()
 
     # create new directory
     def mkdir(self, path):
