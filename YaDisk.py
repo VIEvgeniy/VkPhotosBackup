@@ -47,14 +47,11 @@ class YaDisk:
 
     # загрузить данные из интернета на яндекс диск, fullpath - полный путь до файла на яндекс диске
     def upload_from_url(self, fullpath, url):
-        params = {'path': fullpath, 'url': url}
+        params = {'path': fullpath, 'overwrite': 'true', 'url': url}
         res = requests.post(headers=self._get_headers(), url=self._get_api_url('upload'), params=params)
         res.raise_for_status()
     # create new directory
     def mkdir(self, path):
-        params = {
-            'path': path,
-            'overwrite': 'true'
-        }
+        params = {'path': path, 'overwrite': 'true'}
         res = requests.put(url=self._get_api_url(), headers=self._get_headers(), params=params)
         return res.ok

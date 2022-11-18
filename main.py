@@ -1,11 +1,14 @@
 from pprint import pprint
 import json
 import datetime
+
+from ProgressBar import *
 import YaDisk
 import VkConnect
 import requests
 
 DIR = 'VkPhotosBackup'
+vk_service_album_ids = ['wall', 'profile', 'saved']
 
 try:
     with open('DATA') as token_file:
@@ -18,11 +21,10 @@ except:
         'user_id': ''
     }
 
-
 yandex_disk = YaDisk.YaDisk(DATA['yandex_token'])
 vk_connect = VkConnect.VkConnect(DATA['vk_token'])
 
-while(True):
+while (True):
     if DATA['vk_token']:
         print('Проверка авторизации на ВКонтакте')
         user_info = vk_connect.get_user_info(1)
@@ -33,7 +35,7 @@ while(True):
             print('Неверный токен')
             DATA['vk_token'] = ''
     else:
-        while(True):
+        while (True):
             DATA['vk_token'] = input('Введите токен ВКонтакте(ENTER - выход):')
             if not DATA['vk_token']:
                 quit(1)
@@ -43,18 +45,19 @@ while(True):
                 vk_connect.token = DATA['vk_token']
                 break
 
-while(True):
+while (True):
     if DATA['user_id']:
         print('Поиск пользователя на ВКонтакте')
         user_info = vk_connect.get_user_info(DATA['user_id'])
         if user_info:
             print('Пользователь найден')
+            #DATA['user_id'] = user_info['id']
             break
         else:
             print('Неверный пользователь')
-            DATA['vk_token'] = ''
+            DATA['user_id'] = ''
     else:
-        while(True):
+        while (True):
             DATA['user_id'] = input('Введите id пользователя ВКонтакте(ENTER - выход):')
             if not DATA['user_id']:
                 quit(2)
@@ -63,9 +66,9 @@ while(True):
             else:
                 break
 
-print(f'Альбомы {DATA["user_id"]}: {vk_connect.get_albums(user_info["id"])}')
+# print(f'Альбомы {DATA["user_id"]}: {vk_connect.get_albums(user_info["id"])}')
 
-while(True):
+while True:
     if DATA['yandex_token']:
         print('Проверка авторизации на Яндекс Диске')
         disk_info = yandex_disk.info()
@@ -76,7 +79,7 @@ while(True):
             print('Неверный токен')
             DATA['yandex_token'] = ''
     else:
-        while(True):
+        while (True):
             DATA['yandex_token'] = input('Введите яндекс токен(ENTER - выход):')
             if max(DATA['yandex_token']) > chr(127):
                 print('Недопустимые символы в токене')
@@ -84,16 +87,21 @@ while(True):
                 yandex_disk.token = DATA['yandex_token']
                 break
 
-
 print('Получение информации о фотографиях максимального размера')
-user_id = user_info['id']
-image_list = vk_connect.get_max_photos(user_id)
+
+image_list = vk_connect.get_max_photos(user_info['id'])
 if image_list:
-    print('Ok')
+    print('Информация получена')
+else:
+    print('Неудалось загрузить информацию о фотографиях')
+    quit(3)
 # pprint(image_list)
 
 print('Создание каталога для бэкапа на Яндекс Диске')
-yandex_disk.mkdir(DIR + '/' + DATA['user_id'])
+if yandex_disk.mkdir(f'{DIR}/{DATA["user_id"]}'):
+    print('Католог создан')
+else:
+    print('Католог существует')
 
 # if not yandex_disk.mkdir(DIR):
 #     quit(3)
@@ -102,13 +110,29 @@ yandex_disk.mkdir(DIR + '/' + DATA['user_id'])
 # else:
 #     quit(4)
 
+
 image_info = []
+
+TERRA_BG = RGB(201, 100, 59, BACKGROUND)
+TERRA_FN = RGB(201, 100, 59)
+upload_progress = ProgressBar(begin_char=FORMAT(' ', [BACKGROUND + BLUE, BOLD]),
+                              body_char=FORMAT(' ', [TERRA_BG, BLUE, FRAME]),
+                              end_char=FORMAT(' ', [BACKGROUND + BLUE, BOLD]),
+                              space_char=FORMAT(' ', [BLUE, FRAME]))
+print(f'Загрузка файлов на Яндекс диск({len(image_list)})')
+index_current_file = 0
 for image in image_list:
     filename = str(image['likes_count'])
     if image['likes_count'] in image_info:
         filename += '(' + datetime.datetime.now() + ')'
-    filename += '.' + image['url'].split('.')[-1] # '.jpg'
+    filename += '.' + image['url'].split('.')[-1]  # '.jpg'
+    filename = filename.split('?')[0]
     image_info.append({'file_name': filename, 'size': image['size_type']})
-    # yandex_disk.upload(DIR + '/' + DATA['user_id'] + '/' + filename, data=requests.get(image['url']))
-    yandex_disk.upload_from_url(DIR + '/' + DATA['user_id'] + '/' + filename, image['url'])
-pprint(image_info)
+    yandex_disk.upload(f'{DIR}/{DATA["user_id"]}/{filename}', data=requests.get(image['url']))
+    index_current_file += 1
+    percent = (index_current_file * 100) // len(image_list)
+    upload_progress.step(percent=percent, message=f'{filename}({percent}%)')
+    # yandex_disk.upload_from_url(DIR + '/' + DATA["user_id"] + '/' + filename, image['url'])
+upload_progress.step(percent=100)
+print('Загрузка завершена')
+# pprint(image_info)
