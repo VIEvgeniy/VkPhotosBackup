@@ -114,7 +114,6 @@ else:
 image_info = []
 
 TERRA_BG = RGB(201, 100, 59, BACKGROUND)
-TERRA_FN = RGB(201, 100, 59)
 upload_progress = ProgressBar(begin_char=FORMAT(' ', [BACKGROUND + BLUE, BOLD]),
                               body_char=FORMAT(' ', [TERRA_BG, BLUE, FRAME]),
                               end_char=FORMAT(' ', [BACKGROUND + BLUE, BOLD]),
