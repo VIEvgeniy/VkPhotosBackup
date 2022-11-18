@@ -3,6 +3,7 @@ import json
 import datetime
 import YaDisk
 import VkConnect
+import requests
 
 DIR = 'VkPhotosBackup'
 
@@ -35,7 +36,7 @@ while(True):
         while(True):
             DATA['vk_token'] = input('Введите токен ВКонтакте(ENTER - выход):')
             if not DATA['vk_token']:
-                quit()
+                quit(1)
             if max(DATA['vk_token']) > chr(127):
                 print('Недопустимые символы в токене')
             else:
@@ -56,26 +57,13 @@ while(True):
         while(True):
             DATA['user_id'] = input('Введите id пользователя ВКонтакте(ENTER - выход):')
             if not DATA['user_id']:
-                quit()
+                quit(2)
             if max(DATA['user_id']) > chr(127):
                 print('Недопустимые символы в id пользователя')
             else:
                 break
 
-
-# while(True):
-#    user_id = input('Введите id Вконтакте:')
-#    if max(user_id) > chr(127):
-#        print('Недопустимые символы в токене')
-#        continue
-#    res = vk_connect.get_user_info(user_id=user_id)
-#    if not res:
-#        print('Вееден не верный id')
-#    else:
-#        print(f'Информация о пользователе {user_id}')
-#        pprint(res)
-#        break
-
+print(f'Альбомы {DATA["user_id"]}: {vk_connect.get_albums(user_info["id"])}')
 
 while(True):
     if DATA['yandex_token']:
@@ -98,21 +86,29 @@ while(True):
 
 
 print('Получение информации о фотографиях максимального размера')
-# user_id = res['id']
-image_list = vk_connect.get_max_photos(DATA['user_id'])
+user_id = user_info['id']
+image_list = vk_connect.get_max_photos(user_id)
 if image_list:
     print('Ok')
 # pprint(image_list)
 
 print('Создание каталога для бэкапа на Яндекс Диске')
-if yandex_disk.mkdir(DIR + '/' + DATA['user_id']):
-    print('Ok')
+yandex_disk.mkdir(DIR + '/' + DATA['user_id'])
+
+# if not yandex_disk.mkdir(DIR):
+#     quit(3)
+# if yandex_disk.mkdir(DIR + '/' + DATA['user_id']):
+#     print('Ok')
+# else:
+#     quit(4)
 
 image_info = []
 for image in image_list:
     filename = str(image['likes_count'])
     if image['likes_count'] in image_info:
         filename += '(' + datetime.datetime.now() + ')'
-    filename += '.jpg'
+    filename += '.' + image['url'].split('.')[-1] # '.jpg'
     image_info.append({'file_name': filename, 'size': image['size_type']})
+    # yandex_disk.upload(DIR + '/' + DATA['user_id'] + '/' + filename, data=requests.get(image['url']))
+    yandex_disk.upload_from_url(DIR + '/' + DATA['user_id'] + '/' + filename, image['url'])
 pprint(image_info)

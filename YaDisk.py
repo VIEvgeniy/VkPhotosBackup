@@ -45,10 +45,16 @@ class YaDisk:
         res = requests.put(url=upload_url.get('href', ''), data=data, params=params)
         res.raise_for_status()
 
+    # загрузить данные из интернета на яндекс диск, fullpath - полный путь до файла на яндекс диске
+    def upload_from_url(self, fullpath, url):
+        params = {'path': fullpath, 'url': url}
+        res = requests.post(headers=self._get_headers(), url=self._get_api_url('upload'), params=params)
+        res.raise_for_status()
     # create new directory
     def mkdir(self, path):
         params = {
             'path': path,
             'overwrite': 'true'
         }
-        requests.put(url=self._get_api_url(), headers=self._get_headers(), params=params)
+        res = requests.put(url=self._get_api_url(), headers=self._get_headers(), params=params)
+        return res.ok
