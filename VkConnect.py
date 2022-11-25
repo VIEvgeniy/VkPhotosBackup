@@ -3,11 +3,12 @@ import requests
 
 class VkConnect:
     def __init__(self, token='', version='5.131'):
-        self.token = token
+#        self.token = token
         self.host = 'https://api.vk.com/method/'
-        self.version = version
-        self.params = {'access_token': self.token, 'v': self.version}
-
+#        self.version = version
+        self.params = {'access_token': token, 'v': version}
+    def set_token(self, token):
+        self.params['access_token'] = token
     def _get_api_url(self, api=''):
         res = f'{self.host}{api}'
         return res

@@ -42,7 +42,7 @@ while (True):
             if max(DATA['vk_token']) > chr(127):
                 print('Недопустимые символы в токене')
             else:
-                vk_connect.token = DATA['vk_token']
+                vk_connect.set_token(DATA['vk_token'])
                 break
 
 while (True):
@@ -120,6 +120,7 @@ upload_progress = ProgressBar(begin_char=FORMAT(' ', [BACKGROUND + BLUE, BOLD]),
                               space_char=FORMAT(' ', [BLUE, FRAME]))
 print(f'Загрузка файлов на Яндекс диск({len(image_list)})')
 index_current_file = 0
+upload_progress.begin()
 for image in image_list:
     filename = str(image['likes_count'])
     if image['likes_count'] in image_info:
@@ -134,4 +135,4 @@ for image in image_list:
     # yandex_disk.upload_from_url(DIR + '/' + DATA["user_id"] + '/' + filename, image['url'])
 upload_progress.step(percent=100)
 print('Загрузка завершена')
-# pprint(image_info)
+# https://disk.yandex.ru/d/lyJa_4fBqW4-ZA
