@@ -135,4 +135,7 @@ for image in image_list:
     # yandex_disk.upload_from_url(DIR + '/' + DATA["user_id"] + '/' + filename, image['url'])
 upload_progress.step(percent=100)
 print('Загрузка завершена')
+pprint(image_info)
+with open('backup_img.json', 'w') as info_file:
+    info_file.write(json.dumps(image_info))
 # https://disk.yandex.ru/d/lyJa_4fBqW4-ZA
