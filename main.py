@@ -8,7 +8,7 @@ import VkConnect
 import requests
 
 DIR = 'VkPhotosBackup'
-vk_service_album_ids = ['wall', 'profile', 'saved']
+# vk_service_album_ids = ['wall', 'profile', 'saved']
 
 try:
     with open('DATA') as token_file:

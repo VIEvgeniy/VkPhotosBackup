@@ -37,7 +37,8 @@ class VkConnect:
         return images_info
 
     def get_albums(self, user_id, count=0):
-        params = {'access_token': self.token, 'owner_id': user_id, 'v': self.version}
+   #     params = {'access_token': self.token, 'owner_id': user_id, 'v': self.version}
+        params = {**self.params}
         if count:
             params['count'] = count
         res = requests.get(self._get_api_url('photos.getAlbums'), params=params).json()
