@@ -98,6 +98,12 @@ else:
 # pprint(image_list)
 
 print('Создание каталога для бэкапа на Яндекс Диске')
+if yandex_disk.mkdir(f'{DIR}'):
+    print('Католог создан')
+else:
+    print('Католог существует')
+
+print(f'Создание каталога для бэкапа для {DATA["user_id"]} на Яндекс Диске')
 if yandex_disk.mkdir(f'{DIR}/{DATA["user_id"]}'):
     print('Католог создан')
 else:
